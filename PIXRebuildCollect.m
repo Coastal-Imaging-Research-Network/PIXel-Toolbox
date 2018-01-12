@@ -12,6 +12,8 @@ function r = PIXRebuildCollect( rin )
 
 r = rin;
 
+UAVprocessing = 0;
+
 % prepare for sorting by fov or camera order. build 'sortBy' matrix if not there
 if( isempty(r.sortBy) )
 
@@ -28,6 +30,15 @@ elseif ischar(r.sortBy)
         % use default camera number order, but later do not remove
         % pixels that have been assigned to a camera
         [junk,sortBy] = sort([r.cams(:).cameraNumber]);
+	elseif( strcmp( r.sortBy, 'uav') )
+        % special case UAV -- assume 1 camera and do not throw out UV even
+        % if they are off the image. the camera may move and we'll get
+        % different numbers of pixels to collect, and we lose the pixel to
+        % xyz mapping if there are different numbers of UV.
+        % also -- do not output stuff, we're doing this hundreds of times
+        % for each UAV run and don't need warnings
+        sortBy = r.cams(1).cameraNumber;
+        UAVprocessing = 1;
 	else
 		error(['unknown sortBy string: ' r.sortBy]);
 	end;
@@ -50,7 +61,9 @@ else
 end;
 
 camNums = [r.cams(:).cameraNumber];
-disp(['Sorted camera number order: ' num2str(camNums(sortBy)) ]);
+if( UAVprocessing == 0 )
+    disp(['Sorted camera number order: ' num2str(camNums(sortBy)) ]);
+end
 
 % sortBy is now an array of indexes into r.cams and r.geoms.
 
@@ -86,7 +99,7 @@ for i = sortBy,
 	[dU,dV] = distort( rawUs, rawVs, r.cams(i), r.ip(i) );
 
 	% then find out which ones are in the image
-	isIn = inImage( dU, dV, r.ip(i).width, r.ip(i).height, 'full' ); 
+    isIn = inImage( dU, dV, r.ip(i).width, r.ip(i).height, 'full' ); 
 
     %% added by delft to deal with backprojection from points behind
     % the camera. 20140827
@@ -108,6 +121,11 @@ for i = sortBy,
     %% end delft
 
 	in = find(isIn==1);   % in applies to tempx/tempy/tempz, too.
+    if( UAVprocessing == 1 ) 
+        % use all of them for "in", will handle not
+        % in inmage in the frame sampling for UAV
+        in = 1:length(dU);
+    end
 	if( length(in) < 1 )
 		continue;
 	end;
@@ -238,7 +256,9 @@ for i = sortBy,
 end;
 
 if ~isempty(tempx)
-	disp(['I have points left after assigning them to all cameras.']);
+    if( UAVprocessing == 0 )
+        disp(['I have points left after assigning them to all cameras.']);
+    end
 end;
 
 % new processing, "poly". A sheet or patch. triggered by having a non-empty
