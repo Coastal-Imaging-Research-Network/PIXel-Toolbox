@@ -15,7 +15,7 @@ function varargout = runupPIXArray(varargin)
 %OUTPUTS: (first usage)
 %  x y and z of runup array 
 %
-%INPUTS: (second uasge)
+%INPUTS: (second usage)
 %  xyArray - Nx2 matrix of locations 
 %  Z - matrix of elevations of gridded beach survey data
 %  X,Y - vectors or matrices of describing horizontal locations
@@ -29,6 +29,12 @@ function varargout = runupPIXArray(varargin)
 %    XYZ - matrix of 3 columns of the x y an z location of each pixel 
 %      in the individual runup array.  The z is mapped to the elevations
 %      in 'Z' (above) between the min and max of 'tide' (above)
+%
+%  Why the two usages? If you do not know the Z elevations of the transect
+%  you want to sample, then you cannot input the Z elevations for usage 2.
+%  A regularly sampled beach may have better, more complete survey info
+%  from another source. A UAV on-off measurement probably will not.
+%
 
 % set constants
 dx = 0.25;
