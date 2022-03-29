@@ -1,4 +1,8 @@
-function [instID, lineID] = PIXMakeVBAR( x1, y1, x2, y2, z, name );
+function [instID, lineID] = PIXMakeVBAR( x1, y1, x2, y2, z, name, dy );
+
+if (ischar(name)==1 || isstring(name)==1) && nargin == 6
+    dy = 0.1;
+end
 
 % function [instID] = PIXMakeVBAR( x1, y1, x2, y2, z, name );
 %
@@ -10,7 +14,7 @@ function [instID, lineID] = PIXMakeVBAR( x1, y1, x2, y2, z, name );
 %
 
 instID = PIXCreateInstrument( name, 'vbar', PIXUniqueOnly+PIXFixedZ );
-lineID = PIXAddLine( instID, x1, y1, x2, y2, z, .1, name );
+lineID = PIXAddLine( instID, x1, y1, x2, y2, z, dy, name );
 
 
 %
